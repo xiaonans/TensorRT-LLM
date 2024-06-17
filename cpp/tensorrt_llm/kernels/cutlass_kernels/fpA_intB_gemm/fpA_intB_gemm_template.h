@@ -481,9 +481,13 @@ void CutlassFpAIntBGemmRunner<ActivationType, WeightType, QuantOp, ScaleZeroType
     }
     else if (sm_ == 90)
     {
+        throw std::runtime_error(
+            "[TensorRT-LLM Error][CutlassFpAIntBGemmRunner][dispatch_to_arch] sm_ == 90 is not supported.");
+#if false
         sm90_dispatch_gemm_to_cutlass<ActivationType, WeightType, ScaleZeroType, BiasType, OutputType, QuantOp,
             EpilogueTag>(A, B, weight_scales, weight_zero_points, biases, alpha, C, m, n, k, group_size, workspace_ptr,
             workspace_bytes, gemm_config, stream, occupancy);
+#endif
     }
     else
     {

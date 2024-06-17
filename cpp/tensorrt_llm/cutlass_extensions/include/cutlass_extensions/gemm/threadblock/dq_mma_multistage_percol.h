@@ -514,13 +514,17 @@ public:
         //
         // Mainloop
         //
-
+        
+        int idx = 0;
         CUTLASS_GEMM_LOOP
         for (; gemm_k_iterations > (-Base::kStages + 1);)
         {
             //
             // Loop over GEMM K dimension
             //
+
+            using FragmentOperandB = cutlass::Array<ElementA, Operator::FragmentB::kElements>;
+            FragmentOperandB converted_frag_B_operand;
 
             // Computes a warp-level GEMM on data held in shared memory
             // Each "warp_mma_k" refers to a warp-level matrix multiply-accumulate
@@ -541,23 +545,26 @@ public:
                 {
                     this->warp_tile_iterator_B_.set_kgroup_index(
                         (warp_tileB_k_load_offset + 1) % Base::kWarpGemmIterationsForB);
-                    this->warp_tile_iterator_B_.load(warp_frag_B[(warp_tileB_k_load_offset + 1) % 2]);
+                    this->warp_tile_iterator_B_.load(warp_frag_B[(idx + 1) % 2]);
                     ++this->warp_tile_iterator_B_;
                 }
 
-                typename TransformBAfterLDS::result_type converted_frag_B
-                    = lds_converter(warp_frag_B[warp_tileB_k_load_offset % 2]);
-                warp_dequantizer_.dequantize(converted_frag_B, warp_frag_scales);
+                if (warp_tileB_k_compute_offset == 0) {
+                    typename TransformBAfterLDS::result_type converted_frag_B
+                        = lds_converter(warp_frag_B[idx % 2]);
+                    warp_dequantizer_.dequantize(converted_frag_B, warp_frag_scales);
 
-                using FragmentOperandB = cutlass::Array<ElementA, Operator::FragmentB::kElements>;
-                constexpr cutlass::FloatRoundStyle RoundStyle = cutlass::FloatRoundStyle::round_to_nearest;
-                constexpr int ConversionVectorWidth = TransformBAfterLDS::result_type::kElements;
-                static_assert(ConversionVectorWidth == FragmentOperandB::kElements);
+                    constexpr cutlass::FloatRoundStyle RoundStyle = cutlass::FloatRoundStyle::round_to_nearest;
+                    constexpr int ConversionVectorWidth = TransformBAfterLDS::result_type::kElements;
+                    static_assert(ConversionVectorWidth == FragmentOperandB::kElements);
+                    using Converter
+                        = cutlass::NumericArrayConverter<ElementA, ElementScale, ConversionVectorWidth, RoundStyle>;
+                    converted_frag_B_operand = Converter::convert(converted_frag_B);
+                }
+                if (warp_tileB_k_compute_offset == Base::kNumKIterationsPerWarpBLoad - 1) {
+                  idx++;
+                }
 
-                using Converter
-                    = cutlass::NumericArrayConverter<ElementA, ElementScale, ConversionVectorWidth, RoundStyle>;
-
-                FragmentOperandB converted_frag_B_operand = Converter::convert(converted_frag_B);
                 run_warp_mma(warp_mma, accum, warp_frag_A[warp_mma_k % 2], converted_frag_B_operand, accum,
                     warp_tileB_k_compute_offset);
 

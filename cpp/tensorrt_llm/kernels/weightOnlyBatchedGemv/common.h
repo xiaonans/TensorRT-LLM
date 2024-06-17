@@ -37,7 +37,8 @@ enum class KernelType
     FP16Int8PerChannel,
     BF16Int8PerChannel,
     FP16Int4PerChannel,
-    BF16Int4PerChannel
+    BF16Int4PerChannel,
+    FP16Int2PerChannel
 };
 
 template <KernelType KT>
