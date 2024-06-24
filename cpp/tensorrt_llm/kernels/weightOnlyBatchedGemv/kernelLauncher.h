@@ -101,9 +101,12 @@ inline bool is_supported(int arch, KernelType kernel_type)
         SUPPORT(KernelType::FP16Int4Groupwise);
         SUPPORT(KernelType::BF16Int4Groupwise);
         SUPPORT(KernelType::FP16Int8PerChannel);
+        SUPPORT(KernelType::FP16Int8Groupwise);
         SUPPORT(KernelType::BF16Int8PerChannel);
         SUPPORT(KernelType::FP16Int4PerChannel);
         SUPPORT(KernelType::BF16Int4PerChannel);
+        SUPPORT(KernelType::FP16Int2PerChannel);
+        SUPPORT(KernelType::FP16Int2Groupwise);
     }
     else if (arch >= 90)
     {
