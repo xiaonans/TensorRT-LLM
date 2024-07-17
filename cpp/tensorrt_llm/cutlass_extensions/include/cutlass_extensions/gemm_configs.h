@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <stdio.h>
 namespace tensorrt_llm
 {
 namespace cutlass_extensions
@@ -25,37 +26,37 @@ namespace cutlass_extensions
 enum class CutlassTileConfig
 {
     // Signals that we should run heuristics do choose a config
-    Undefined,
+    Undefined, // 0
 
     // Signals that we should run heuristics do choose a config
-    ChooseWithHeuristic,
+    ChooseWithHeuristic, // 1
 
     // SiMT config
-    CtaShape128x128x8_WarpShape64x64x8,
+    CtaShape128x128x8_WarpShape64x64x8, // 2
 
     // TensorCore configs CTA_N = 128, CTA_K = 64
     // Warp configs for M=16
-    CtaShape16x128x64_WarpShape16x32x64,
+    CtaShape16x128x64_WarpShape16x32x64, //3
     // Warp configs for M=32
-    CtaShape32x128x64_WarpShape32x32x64,
+    CtaShape32x128x64_WarpShape32x32x64, // 4
 
     // Warp configs for M=64
-    CtaShape64x128x64_WarpShape32x64x64,
-    CtaShape64x64x128_WarpShape32x64x64,
-    CtaShape64x128x64_WarpShape64x32x64,
+    CtaShape64x128x64_WarpShape32x64x64, // 5
+    CtaShape64x64x128_WarpShape32x64x64, // 6
+    CtaShape64x128x64_WarpShape64x32x64, // 7
 
     // Warp configs for M=128
-    CtaShape128x64x64_WarpShape64x32x64,
-    CtaShape128x128x64_WarpShape64x32x64,
-    CtaShape128x128x64_WarpShape64x64x64,
-    CtaShape128x128x64_WarpShape128x32x64,
-    CtaShape128x256x64_WarpShape64x64x64,
+    CtaShape128x64x64_WarpShape64x32x64, // 8
+    CtaShape128x128x64_WarpShape64x32x64, // 9
+    CtaShape128x128x64_WarpShape64x64x64, // 10
+    CtaShape128x128x64_WarpShape128x32x64, // 11
+    CtaShape128x256x64_WarpShape64x64x64, // 12
 
     // Warp configs for M=256
-    CtaShape256x128x64_WarpShape64x64x64,
+    CtaShape256x128x64_WarpShape64x64x64,  //13
 
     // TensorCore config CTA_N = 256, CTA_K = 64
-    CtaShape16x256x64_WarpShape16x64x64
+    CtaShape16x256x64_WarpShape16x64x64 // 14
 };
 
 enum class SplitKStyle
@@ -152,6 +153,11 @@ struct CutlassGemmConfig
         , cluster_shape(cluster_shape)
         , is_sm90(true)
     {
+    }
+
+    void print(){
+        printf("[CutlassGemmConfig INFO] tile_config = %d, split_k_style = %d, split_k_factor = %d, stages = %d\n",
+            int(tile_config), int(split_k_style), split_k_factor, stages);
     }
 };
 
